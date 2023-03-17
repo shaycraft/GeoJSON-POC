@@ -13,7 +13,26 @@
 		C7B20BB329C4D8EB006BBE15 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7B20BB129C4D8EB006BBE15 /* Main.storyboard */; };
 		C7B20BB529C4D8EC006BBE15 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7B20BB429C4D8EC006BBE15 /* Assets.xcassets */; };
 		C7B20BB829C4D8EC006BBE15 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C7B20BB629C4D8EC006BBE15 /* LaunchScreen.storyboard */; };
+		C7B20BC129C4D966006BBE15 /* ArcGIS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7B20BC029C4D966006BBE15 /* ArcGIS.xcframework */; };
+		C7B20BC229C4D966006BBE15 /* ArcGIS.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C7B20BC029C4D966006BBE15 /* ArcGIS.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C7B20BC529C4D96C006BBE15 /* Runtimecore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7B20BC429C4D96C006BBE15 /* Runtimecore.xcframework */; };
+		C7B20BC629C4D96C006BBE15 /* Runtimecore.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C7B20BC429C4D96C006BBE15 /* Runtimecore.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C7B20BC329C4D966006BBE15 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C7B20BC229C4D966006BBE15 /* ArcGIS.xcframework in Embed Frameworks */,
+				C7B20BC629C4D96C006BBE15 /* Runtimecore.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C7B20BA829C4D8EB006BBE15 /* GeoJSON-POC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GeoJSON-POC.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -24,6 +43,8 @@
 		C7B20BB429C4D8EC006BBE15 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C7B20BB729C4D8EC006BBE15 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C7B20BB929C4D8EC006BBE15 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C7B20BC029C4D966006BBE15 /* ArcGIS.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ArcGIS.xcframework; path = ../../Library/SDKs/ArcGIS/Frameworks/ArcGIS.xcframework; sourceTree = "<group>"; };
+		C7B20BC429C4D96C006BBE15 /* Runtimecore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Runtimecore.xcframework; path = ../../Library/SDKs/ArcGIS/Frameworks/Runtimecore.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +52,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C7B20BC129C4D966006BBE15 /* ArcGIS.xcframework in Frameworks */,
+				C7B20BC529C4D96C006BBE15 /* Runtimecore.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +65,7 @@
 			children = (
 				C7B20BAA29C4D8EB006BBE15 /* GeoJSON-POC */,
 				C7B20BA929C4D8EB006BBE15 /* Products */,
+				C7B20BBF29C4D966006BBE15 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -67,6 +91,15 @@
 			path = "GeoJSON-POC";
 			sourceTree = "<group>";
 		};
+		C7B20BBF29C4D966006BBE15 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C7B20BC429C4D96C006BBE15 /* Runtimecore.xcframework */,
+				C7B20BC029C4D966006BBE15 /* ArcGIS.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -77,6 +110,7 @@
 				C7B20BA429C4D8EB006BBE15 /* Sources */,
 				C7B20BA529C4D8EB006BBE15 /* Frameworks */,
 				C7B20BA629C4D8EB006BBE15 /* Resources */,
+				C7B20BC329C4D966006BBE15 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
