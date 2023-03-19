@@ -698,6 +698,7 @@ let sampleJsonResponse = """
 """;
 
 class ViewController: UIViewController {
+    @IBOutlet weak var mapView: AGSMapView!
     
     func parseExampleFromStackOverflow() {
         do {
@@ -717,7 +718,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.parseExampleFromStackOverflow()
+        // self.parseExampleFromStackOverflow()
+        self.setupMap()
         
         // Do any additional setup after loading the view.
         
@@ -748,6 +750,21 @@ class ViewController: UIViewController {
         //        }
     }
     
+    private func setupMap() {
+        let map = AGSMap(
+            basemapStyle: .arcGISTopographic
+        )
+        
+        mapView.map = map
+        
+        mapView.setViewpoint(
+            AGSViewpoint(
+                latitude: 34.02700,
+                longitude: -118.80500,
+                scale: 72_000
+            )
+        )
+    }
     
 }
 
