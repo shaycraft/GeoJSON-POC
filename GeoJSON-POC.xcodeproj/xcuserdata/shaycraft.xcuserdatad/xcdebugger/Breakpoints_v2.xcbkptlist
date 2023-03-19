@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "67311612-34EC-460D-A35F-5658AE109934"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0AE85B0D-6AB7-49CA-A851-D3765B8DEAEC"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeoJSON-POC/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "11"
+            endingLineNumber = "11"
+            landmarkName = "unknown"
+            landmarkType = "0">
+            <Locations>
+               <Location
+                  uuid = "0AE85B0D-6AB7-49CA-A851-D3765B8DEAEC - 31a8ec5ed57fba1f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "one-time initialization function for sampleJsonResponse"
+                  moduleName = "GeoJSON-POC"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/shaycraft/src/GeoJSON-POC/GeoJSON-POC/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "10"
+                  endingLineNumber = "10"
+                  offsetFromSymbolStart = "52">
+               </Location>
+               <Location
+                  uuid = "0AE85B0D-6AB7-49CA-A851-D3765B8DEAEC - 3d3ec37bf349890a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "GeoJSON_POC.sampleJsonResponse.unsafeMutableAddressor : Swift.String"
+                  moduleName = "GeoJSON-POC"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/shaycraft/src/GeoJSON-POC/GeoJSON-POC/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "10"
+                  endingLineNumber = "10"
+                  offsetFromSymbolStart = "16">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
