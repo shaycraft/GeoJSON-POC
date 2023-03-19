@@ -6,6 +6,8 @@
 //
 
 import UIKit
+
+w
 import ArcGIS
 
 let sampleJsonResponse = """
@@ -700,6 +702,22 @@ let sampleJsonResponse = """
 class ViewController: UIViewController {
     @IBOutlet weak var mapView: AGSMapView!
     
+    private func setupMap() {
+        let map = AGSMap(
+            basemapStyle: .arcGISTopographic
+        )
+        
+        mapView.map = map
+        //
+        //        mapView.setViewpoint(
+        //            AGSViewpoint(
+        //                latitude: 34.02700,
+        //                longitude: -118.80500,
+        //                scale: 72_000
+        //            )
+        //        )
+    }
+    
     func parseExampleFromStackOverflow() {
         do {
             let data =  "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
@@ -719,7 +737,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         // self.parseExampleFromStackOverflow()
-        self.setupMap()
+        setupMap()
         
         // Do any additional setup after loading the view.
         
@@ -750,21 +768,7 @@ class ViewController: UIViewController {
         //        }
     }
     
-    private func setupMap() {
-        let map = AGSMap(
-            basemapStyle: .arcGISTopographic
-        )
-        
-        mapView.map = map
-        
-        mapView.setViewpoint(
-            AGSViewpoint(
-                latitude: 34.02700,
-                longitude: -118.80500,
-                scale: 72_000
-            )
-        )
-    }
+    
     
 }
 

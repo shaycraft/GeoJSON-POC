@@ -16,7 +16,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FPz-6Q-XdK">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gBq-1z-e5A">
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             </view>
@@ -24,12 +24,15 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="FPz-6Q-XdK" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="n4d-ym-Uhs"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="FPz-6Q-XdK" secondAttribute="bottom" id="nbw-QS-h61"/>
-                            <constraint firstItem="FPz-6Q-XdK" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="tqk-iC-INX"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="FPz-6Q-XdK" secondAttribute="trailing" id="x4W-Cd-IAs"/>
+                            <constraint firstItem="gBq-1z-e5A" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="AJV-t8-kZp"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="gBq-1z-e5A" secondAttribute="trailing" id="AMK-DO-kQY"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="gBq-1z-e5A" secondAttribute="bottom" id="RJ4-Ni-ImH"/>
+                            <constraint firstItem="gBq-1z-e5A" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="ZKt-ua-QZ6"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="mapView" destination="gBq-1z-e5A" id="mYI-Vn-UlP"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
