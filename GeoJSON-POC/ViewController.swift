@@ -84,13 +84,38 @@ let pathsPointDumeTest = """
 class ViewController: UIViewController {
     @IBOutlet weak var mapView: AGSMapView!
     var graphicsOverlay: AGSGraphicsOverlay! = AGSGraphicsOverlay()
+    var portalItem: AGSPortalItem?
+    var offlineMapTask: AGSOfflineMapTask?
     
-    private func setupMap() {
-        let map = AGSMap(
-            basemapStyle: .arcGISTopographic
-        )
+    private func _setupMap() {
+        //        let map = AGSMap(
+        //            basemapStyle: .arcGISTopographic
+        //        )
         
-        mapView.map = map
+        let portal = AGSPortal.arcGISOnline(withLoginRequired: false)
+        
+        // TODO:  move to function
+        // see https://developers.arcgis.com/ios/offline-maps-scenes-and-data/download-an-offline-map-ahead-of-time/ for the approach used here
+        self.portalItem = AGSPortalItem(portal: portal, itemID: "ef722b2c44c2443090d98115a9ce8058")
+        let map = AGSMap(item: portalItem!)
+        map.load { (error) -> Void in
+            self.mapView.map = map
+            
+            // self.offlineMapTask = AGSOfflineMapTask(portalItem: self.portalItem!)
+            self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
+            
+            self.offlineMapTask?.getPreplannedMapAreas(completion: {[weak self] (mapAreas, error) in
+                print("Hey!!!!!")
+                if let error = error {
+                    print("This is wack!!!!")
+                    print(error.localizedDescription)
+                } else {
+                    print("Working...");
+                    print(mapAreas as Any)
+                }
+            })
+        }
+        
         
         mapView.setViewpoint(
             AGSViewpoint(
@@ -101,24 +126,14 @@ class ViewController: UIViewController {
         )
     }
     
-    private func addGraphics() {
+    private func _setupGrahpicsOverlay() {
         mapView.graphicsOverlays.add(graphicsOverlay!)
     }
     
-    func parseExampleFromStackOverflow() {
+    private func _parseJsonAndAddToGraphics() {
         do {
             //            let data =  "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
             if let json = try JSONSerialization.jsonObject(with: Data(pathsPointDumeTest.utf8)) as? [String: Any] {
-
-                
-                /**
-                 !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!                    !!!!!!!!!!!!!!!!
-                 See https://community.esri.com/t5/arcgis-runtime-sdk-for-ios-questions/ios-sdk-swift-unexpected-type-error-using/m-p/1169867
-                 */
-                
-                // !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!
-                // !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!
-
                 print("Json is good")
                 let polyline = try AGSPolyline.fromJSON(json)
                 let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: .blue, width: 3.0)
@@ -140,10 +155,10 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupMap()
-        addGraphics()
+        _setupMap()
+        _setupGrahpicsOverlay()
         
-        parseExampleFromStackOverflow()
+        _parseJsonAndAddToGraphics()
         
         // Do any additional setup after loading the view.
         
