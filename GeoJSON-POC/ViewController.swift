@@ -88,10 +88,6 @@ class ViewController: UIViewController {
     var offlineMapTask: AGSOfflineMapTask?
     
     private func _setupMap() {
-        //        let map = AGSMap(
-        //            basemapStyle: .arcGISTopographic
-        //        )
-        
         let portal = AGSPortal.arcGISOnline(withLoginRequired: false)
         
         // TODO:  move to function
@@ -101,29 +97,33 @@ class ViewController: UIViewController {
         map.load { (error) -> Void in
             self.mapView.map = map
             
-            // self.offlineMapTask = AGSOfflineMapTask(portalItem: self.portalItem!)
             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
             
             self.offlineMapTask?.getPreplannedMapAreas(completion: {[weak self] (mapAreas, error) in
-                print("Hey!!!!!")
                 if let error = error {
-                    print("This is wack!!!!")
+                    self?._printError(err: "getPreplannedMapAreas failed")
                     print(error.localizedDescription)
                 } else {
-                    print("Working...");
+                    print("mapAreas |");
                     print(mapAreas as Any)
                 }
             })
+            
+            self.mapView.setViewpoint(
+                AGSViewpoint(
+                    latitude: 34.02700,
+                    longitude: -118.80500,
+                    scale: 72_000
+                )
+            )
         }
         
         
-        mapView.setViewpoint(
-            AGSViewpoint(
-                latitude: 34.02700,
-                longitude: -118.80500,
-                scale: 72_000
-            )
-        )
+        
+    }
+    
+    private func _printError(err: Any) {
+        print(">>>>>>> ERROR: \(err) <<<<<<<")
     }
     
     private func _setupGrahpicsOverlay() {
@@ -140,56 +140,24 @@ class ViewController: UIViewController {
                 let polylineGraphic = AGSGraphic(geometry: polyline as? AGSGeometry, symbol: polylineSymbol)
                 graphicsOverlay.graphics.add(polylineGraphic)
                 print(polyline)
-                //                 ##!  Idea!  add from geoJSON url (stored in s3), just as a straight layer using the S3 url
-                //                ## But first, just try to shape it way they want with paths (see https://github.com/Esri/arcgis-runtime-samples-ios/blob/ee1bbe9b20a009770c12a3f2fb048edf552115e9/arcgis-ios-sdk-samples/Maps/Show%20location%20history/LocationHistoryViewController.swift)
             } else {
-                print ("Json is BAD!!!!!")
+                self._printError(err: "JSON parse failed")
             }
         }
         catch {
-            print("Failed to load: \(error.localizedDescription)")
-            print("Raw error is \(error)")
+            self._printError(err: "Failed to load: \(error.localizedDescription)")
+            self._printError(err: "Raw error is \(error)")
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Do any additional setup after loading the view.
+        
         _setupMap()
         _setupGrahpicsOverlay()
         
         _parseJsonAndAddToGraphics()
-        
-        // Do any additional setup after loading the view.
-        
-        //        //        let someString = "{'foo': 'bar'}"
-        //        do {
-        //            let myJsonObject = try JSONSerialization.jsonObject(with: sampleJsonResponse.data(using: .utf8)!) as? [String: Any]
-        //            print (myJsonObject["spatialReference"])
-        //        }
-        //        catch {
-        //            print("ERRORRRR!!!!")
-        //            print("[DEBUG=====]: \(error)")
-        //        }
-        
-        //        let str = "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
-        //        let data = Data(sampleJsonResponse.utf8)
-        //
-        //        do {
-        //            // make sure this JSON is in the format we expect
-        //            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-        //                // try to read out a string array
-        //                print(json["spatialReference"]!)
-        //                if let names = json["names"] as? [String] {
-        //                    print(names)
-        //                }
-        //            }
-        //        } catch let error as NSError {
-        //            print("Failed to load: \(error.localizedDescription)")
-        //        }
     }
-    
-    
-    
 }
-
