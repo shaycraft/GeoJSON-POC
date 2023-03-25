@@ -86,8 +86,55 @@ class ViewController: UIViewController {
     var graphicsOverlay: AGSGraphicsOverlay! = AGSGraphicsOverlay()
     var portalItem: AGSPortalItem?
     var offlineMapTask: AGSOfflineMapTask?
+    var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
-    private func _setupMap() {
+    private func _createDownoadParameters(mapArea: AGSPreplannedMapArea) -> Void {
+        print("We are in process map area now \(mapArea)")
+        
+        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: {[weak self] (parameters, error) in
+            if let error = error {
+                self?._printError(err: "Error returned in download parameters")
+                print(error.localizedDescription)
+                return
+            }
+            guard parameters != nil else {
+                self?._printError(err: "parameteres object is null")
+                return
+            }
+            
+            
+            if let parameters = parameters {
+                parameters.continueOnErrors = false
+                parameters.includeBasemap = true
+                parameters.referenceBasemapDirectory = URL(filePath: "\\mytilepackages")
+                self?.preplannedParameters = parameters
+                
+                print("parameters set")
+                print(String(describing: self?.preplannedParameters))
+            }
+        })
+    }
+    
+    private func _processMapAreaList(map: AGSMap) -> Void {
+        self.offlineMapTask?.getPreplannedMapAreas(completion: { [weak self] (mapAreas, error) in
+            if let error = error {
+                self?._printError(err:  "GetPrePlannedMapAreas failed")
+                print(error.localizedDescription)
+            }
+            print("Map areas = \(String(describing:mapAreas))")
+            
+            guard mapAreas != nil else {
+                self?._printError(err: "No map areas returned in list")
+                return
+            }
+            
+            if let mapAreas = mapAreas {
+                self?._createDownoadParameters(mapArea: mapAreas[0])
+            }
+        })
+    }
+    
+    private func _setupMap() -> Void {
         let portal = AGSPortal.arcGISOnline(withLoginRequired: false)
         
         // TODO:  move to function
@@ -96,18 +143,9 @@ class ViewController: UIViewController {
         let map = AGSMap(item: portalItem!)
         map.load { (error) -> Void in
             self.mapView.map = map
-            
             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
             
-            self.offlineMapTask?.getPreplannedMapAreas(completion: {[weak self] (mapAreas, error) in
-                if let error = error {
-                    self?._printError(err: "getPreplannedMapAreas failed")
-                    print(error.localizedDescription)
-                } else {
-                    print("mapAreas |");
-                    print(mapAreas as Any)
-                }
-            })
+            self._processMapAreaList(map: map)
             
             self.mapView.setViewpoint(
                 AGSViewpoint(
@@ -117,9 +155,6 @@ class ViewController: UIViewController {
                 )
             )
         }
-        
-        
-        
     }
     
     private func _printError(err: Any) {
@@ -148,6 +183,28 @@ class ViewController: UIViewController {
             self._printError(err: "Failed to load: \(error.localizedDescription)")
             self._printError(err: "Raw error is \(error)")
         }
+    }
+    
+    private func _createDownloadParameters(mapArea: AGSPreplannedMapArea) {
+        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: { [weak self] (parameters, error) in
+            if let error = error {
+                self?._printError(err: error)
+                return
+            }
+            
+            guard parameters != nil else {
+                self?._printError(err: "No parameters")
+                return
+            }
+            
+            if let parameters = parameters {
+                // Update any of these parameters values, if needed
+                parameters.continueOnErrors = false
+                parameters.includeBasemap = true
+                parameters.referenceBasemapDirectory = URL(string: "file:///mytilepackages")
+                self?.preplannedParameters = parameters
+            }
+        })
     }
     
     override func viewDidLoad() {
