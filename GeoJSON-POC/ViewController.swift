@@ -84,97 +84,137 @@ let pathsPointDumeTest = """
 class ViewController: UIViewController {
     @IBOutlet weak var mapView: AGSMapView!
     var graphicsOverlay: AGSGraphicsOverlay! = AGSGraphicsOverlay()
+    var portalItem: AGSPortalItem?
+    var offlineMapTask: AGSOfflineMapTask?
+    var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
-    private func setupMap() {
-        let map = AGSMap(
-            basemapStyle: .arcGISTopographic
-        )
+    private func _createDownoadParameters(mapArea: AGSPreplannedMapArea) -> Void {
+        print("We are in process map area now \(mapArea)")
         
-        mapView.map = map
-        
-        mapView.setViewpoint(
-            AGSViewpoint(
-                latitude: 34.02700,
-                longitude: -118.80500,
-                scale: 72_000
-            )
-        )
+        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: {[weak self] (parameters, error) in
+            if let error = error {
+                self?._printError(err: "Error returned in download parameters")
+                print(error.localizedDescription)
+                return
+            }
+            guard parameters != nil else {
+                self?._printError(err: "parameteres object is null")
+                return
+            }
+            
+            
+            if let parameters = parameters {
+                parameters.continueOnErrors = false
+                parameters.includeBasemap = true
+                parameters.referenceBasemapDirectory = URL(filePath: "\\mytilepackages")
+                self?.preplannedParameters = parameters
+                
+                print("parameters set")
+                print(String(describing: self?.preplannedParameters))
+            }
+        })
     }
     
-    private func addGraphics() {
+    private func _processMapAreaList(map: AGSMap) -> Void {
+        self.offlineMapTask?.getPreplannedMapAreas(completion: { [weak self] (mapAreas, error) in
+            if let error = error {
+                self?._printError(err:  "GetPrePlannedMapAreas failed")
+                print(error.localizedDescription)
+            }
+            print("Map areas = \(String(describing:mapAreas))")
+            
+            guard mapAreas != nil else {
+                self?._printError(err: "No map areas returned in list")
+                return
+            }
+            
+            if let mapAreas = mapAreas {
+                self?._createDownoadParameters(mapArea: mapAreas[0])
+            }
+        })
+    }
+    
+    private func _setupMap() -> Void {
+        let portal = AGSPortal.arcGISOnline(withLoginRequired: false)
+        
+        // TODO:  move to function
+        // see https://developers.arcgis.com/ios/offline-maps-scenes-and-data/download-an-offline-map-ahead-of-time/ for the approach used here
+        self.portalItem = AGSPortalItem(portal: portal, itemID: "ef722b2c44c2443090d98115a9ce8058")
+        let map = AGSMap(item: portalItem!)
+        map.load { (error) -> Void in
+            self.mapView.map = map
+            self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
+            
+            self._processMapAreaList(map: map)
+            
+            self.mapView.setViewpoint(
+                AGSViewpoint(
+                    latitude: 34.02700,
+                    longitude: -118.80500,
+                    scale: 72_000
+                )
+            )
+        }
+    }
+    
+    private func _printError(err: Any) {
+        print(">>>>>>> ERROR: \(err) <<<<<<<")
+    }
+    
+    private func _setupGrahpicsOverlay() {
         mapView.graphicsOverlays.add(graphicsOverlay!)
     }
     
-    func parseExampleFromStackOverflow() {
+    private func _parseJsonAndAddToGraphics() {
         do {
             //            let data =  "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
             if let json = try JSONSerialization.jsonObject(with: Data(pathsPointDumeTest.utf8)) as? [String: Any] {
-
-                
-                /**
-                 !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!                    !!!!!!!!!!!!!!!!
-                 See https://community.esri.com/t5/arcgis-runtime-sdk-for-ios-questions/ios-sdk-swift-unexpected-type-error-using/m-p/1169867
-                 */
-                
-                // !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!
-                // !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!
-
                 print("Json is good")
                 let polyline = try AGSPolyline.fromJSON(json)
                 let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: .blue, width: 3.0)
                 let polylineGraphic = AGSGraphic(geometry: polyline as? AGSGeometry, symbol: polylineSymbol)
                 graphicsOverlay.graphics.add(polylineGraphic)
                 print(polyline)
-                //                 ##!  Idea!  add from geoJSON url (stored in s3), just as a straight layer using the S3 url
-                //                ## But first, just try to shape it way they want with paths (see https://github.com/Esri/arcgis-runtime-samples-ios/blob/ee1bbe9b20a009770c12a3f2fb048edf552115e9/arcgis-ios-sdk-samples/Maps/Show%20location%20history/LocationHistoryViewController.swift)
             } else {
-                print ("Json is BAD!!!!!")
+                self._printError(err: "JSON parse failed")
             }
         }
         catch {
-            print("Failed to load: \(error.localizedDescription)")
-            print("Raw error is \(error)")
+            self._printError(err: "Failed to load: \(error.localizedDescription)")
+            self._printError(err: "Raw error is \(error)")
         }
+    }
+    
+    private func _createDownloadParameters(mapArea: AGSPreplannedMapArea) {
+        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: { [weak self] (parameters, error) in
+            if let error = error {
+                self?._printError(err: error)
+                return
+            }
+            
+            guard parameters != nil else {
+                self?._printError(err: "No parameters")
+                return
+            }
+            
+            if let parameters = parameters {
+                // Update any of these parameters values, if needed
+                parameters.continueOnErrors = false
+                parameters.includeBasemap = true
+                parameters.referenceBasemapDirectory = URL(string: "file:///mytilepackages")
+                self?.preplannedParameters = parameters
+            }
+        })
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupMap()
-        addGraphics()
-        
-        parseExampleFromStackOverflow()
-        
         // Do any additional setup after loading the view.
         
-        //        //        let someString = "{'foo': 'bar'}"
-        //        do {
-        //            let myJsonObject = try JSONSerialization.jsonObject(with: sampleJsonResponse.data(using: .utf8)!) as? [String: Any]
-        //            print (myJsonObject["spatialReference"])
-        //        }
-        //        catch {
-        //            print("ERRORRRR!!!!")
-        //            print("[DEBUG=====]: \(error)")
-        //        }
+        _setupMap()
+        _setupGrahpicsOverlay()
         
-        //        let str = "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
-        //        let data = Data(sampleJsonResponse.utf8)
-        //
-        //        do {
-        //            // make sure this JSON is in the format we expect
-        //            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-        //                // try to read out a string array
-        //                print(json["spatialReference"]!)
-        //                if let names = json["names"] as? [String] {
-        //                    print(names)
-        //                }
-        //            }
-        //        } catch let error as NSError {
-        //            print("Failed to load: \(error.localizedDescription)")
-        //        }
+        _parseJsonAndAddToGraphics()
     }
-    
-    
-    
 }
-
