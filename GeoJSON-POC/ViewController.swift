@@ -87,8 +87,13 @@ class ViewController: UIViewController {
     var portalItem: AGSPortalItem?
     var offlineMapTask: AGSOfflineMapTask?
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
+    private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
     
-    private func _createDownoadParameters(mapArea: AGSPreplannedMapArea) -> Void {
+    private func _createOfflineMapJob(path: String, parameters: AGSDownloadPreplannedOfflineMapParameters) -> AGSDownloadPreplannedOfflineMapJob? {
+        return self.offlineMapTask?.downloadPreplannedOfflineMapJob(with: parameters, downloadDirectory: URL(filePath: path))
+    }
+    
+    private func _createOfflineMapJob(mapArea: AGSPreplannedMapArea) -> Void {
         print("We are in process map area now \(mapArea)")
         
         self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: {[weak self] (parameters, error) in
@@ -97,6 +102,7 @@ class ViewController: UIViewController {
                 print(error.localizedDescription)
                 return
             }
+            
             guard parameters != nil else {
                 self?._printError(err: "parameteres object is null")
                 return
@@ -111,6 +117,11 @@ class ViewController: UIViewController {
                 
                 print("parameters set")
                 print(String(describing: self?.preplannedParameters))
+                
+                self?.downloadPreplannedMapJob = self?._createOfflineMapJob(path: "\\mydownloadmaps", parameters: parameters)
+                guard self?.downloadPreplannedMapJob != nil else { return }
+                
+                print("DEBUG: map job = \(String(describing: self?.downloadPreplannedMapJob))")
             }
         })
     }
@@ -129,7 +140,7 @@ class ViewController: UIViewController {
             }
             
             if let mapAreas = mapAreas {
-                self?._createDownoadParameters(mapArea: mapAreas[0])
+                self?._createOfflineMapJob(mapArea: mapAreas[0])
             }
         })
     }
@@ -183,28 +194,6 @@ class ViewController: UIViewController {
             self._printError(err: "Failed to load: \(error.localizedDescription)")
             self._printError(err: "Raw error is \(error)")
         }
-    }
-    
-    private func _createDownloadParameters(mapArea: AGSPreplannedMapArea) {
-        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: { [weak self] (parameters, error) in
-            if let error = error {
-                self?._printError(err: error)
-                return
-            }
-            
-            guard parameters != nil else {
-                self?._printError(err: "No parameters")
-                return
-            }
-            
-            if let parameters = parameters {
-                // Update any of these parameters values, if needed
-                parameters.continueOnErrors = false
-                parameters.includeBasemap = true
-                parameters.referenceBasemapDirectory = URL(string: "file:///mytilepackages")
-                self?.preplannedParameters = parameters
-            }
-        })
     }
     
     override func viewDidLoad() {
