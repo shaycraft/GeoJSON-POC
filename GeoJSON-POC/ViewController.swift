@@ -97,11 +97,9 @@ class ViewController: UIViewController {
     //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
     
     // download directories
-    private var downloadDirectoryBasemap: URL?
     private var downloadDirectoryMap: URL?
     
     private func _createDownloadDirectories() throws -> Void {
-        self.downloadDirectoryBasemap = try self._createTemporaryDirectory(directoryName: "GIS_DOWNLOAD_BASEMAP")
         self.downloadDirectoryMap = try self._createTemporaryDirectory(directoryName: "GIS_DOWNLOAD_MAP_DATA")
     }
     
@@ -139,7 +137,6 @@ class ViewController: UIViewController {
                 self._printError(err: "result of download offline map has errors")
             } else {
                 self.mapView.map = result.offlineMap
-                //                self.mapView.map = nil
             }
             
         })
@@ -167,10 +164,7 @@ class ViewController: UIViewController {
             
             if let parameters = parameters {
                 parameters.continueOnErrors = false
-                parameters.includeBasemap = false
-                // TODO:  why is this not working?  Says needs a filename, but when a filename is provided,
-                // it then says that said file does not exist
-                // parameters.referenceBasemapDirectory = self?.downloadDirectoryBasemap
+                parameters.includeBasemap = true
                 self?.preplannedParameters = parameters
                 
                 print("parameters set")
