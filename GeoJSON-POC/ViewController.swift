@@ -91,6 +91,10 @@ class ViewController: UIViewController {
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
     private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
+    // trailheads sample data from tutorial
+    private var MAP_PORTAL_ID: String! = "ef722b2c44c2443090d98115a9ce8058"
+    // TIGER census data roads/waters sample (Colorado)
+    //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
     
     // download directories
     private var downloadDirectoryBasemap: URL?
@@ -128,6 +132,16 @@ class ViewController: UIViewController {
                 print(error.localizedDescription)
                 print(error)
             }
+            
+            guard let result = result else { return }
+            
+            if result.hasErrors {
+                self._printError(err: "result of download offline map has errors")
+            } else {
+                self.mapView.map = result.offlineMap
+                //                self.mapView.map = nil
+            }
+            
         })
     }
     
@@ -196,7 +210,7 @@ class ViewController: UIViewController {
         
         // TODO:  move to function
         // see https://developers.arcgis.com/ios/offline-maps-scenes-and-data/download-an-offline-map-ahead-of-time/ for the approach used here
-        self.portalItem = AGSPortalItem(portal: portal, itemID: "ef722b2c44c2443090d98115a9ce8058")
+        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
         let map = AGSMap(item: portalItem!)
         map.load { (error) -> Void in
             self.mapView.map = map
