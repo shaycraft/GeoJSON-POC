@@ -3,6 +3,8 @@
 //  GeoJSON-POC
 //
 //  Created by Samuel Haycraft on 3/17/23.
+//  TODO: convert callback hell to async pattern
+//  see https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/
 //
 
 import UIKit
@@ -88,7 +90,63 @@ class ViewController: UIViewController {
     var offlineMapTask: AGSOfflineMapTask?
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
-    private func _createDownoadParameters(mapArea: AGSPreplannedMapArea) -> Void {
+    private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
+    // trailheads sample data from tutorial
+    private var MAP_PORTAL_ID: String! = "ef722b2c44c2443090d98115a9ce8058"
+    // TIGER census data roads/waters sample (Colorado)
+    //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
+    
+    // download directories
+    private var downloadDirectoryMap: URL?
+    
+    private func _createDownloadDirectories() throws -> Void {
+        self.downloadDirectoryMap = try self._createTemporaryDirectory(directoryName: "GIS_DOWNLOAD_MAP_DATA")
+    }
+    
+    private func _createTemporaryDirectory(directoryName: String) throws -> URL? {
+        let defaultManager = FileManager.default
+        let temporaryDownloadURL = defaultManager.temporaryDirectory.appendingPathComponent(directoryName)
+        
+        if defaultManager.fileExists(atPath: temporaryDownloadURL.path) {
+            try defaultManager.removeItem(atPath: temporaryDownloadURL.path)
+        }
+        try  defaultManager.createDirectory(at: temporaryDownloadURL, withIntermediateDirectories: true, attributes: nil)
+        
+        print( String(describing: defaultManager.subpaths(atPath: FileManager.default.temporaryDirectory.path)))
+        
+        return temporaryDownloadURL
+    }
+    
+    private func _runDownloadMapJob() -> Void {
+        self.downloadPreplannedMapJob?.start(statusHandler: { [weak self] (status) in
+            let normalizedFraction = (self?.downloadPreplannedMapJob!.progress.fractionCompleted)! * 100
+            let percentComplete: String = String(format: "%.0f", normalizedFraction)
+            
+            print("Status [\(percentComplete) % complete...]: \(status)")
+        }, completion: { (result, error) in
+            print("File download completed")
+            if let error = error {
+                self._printError(err: "Error occurred in download map job completion")
+                print(error.localizedDescription)
+                print(error)
+            }
+            
+            guard let result = result else { return }
+            
+            if result.hasErrors {
+                self._printError(err: "result of download offline map has errors")
+            } else {
+                self.mapView.map = result.offlineMap
+            }
+            
+        })
+    }
+    
+    private func _instantiateDownloadJobObject(parameters: AGSDownloadPreplannedOfflineMapParameters) -> AGSDownloadPreplannedOfflineMapJob? {
+        return self.offlineMapTask?.downloadPreplannedOfflineMapJob(with: parameters, downloadDirectory: self.downloadDirectoryMap!)
+    }
+    
+    private func _createOfflineMapJob(mapArea: AGSPreplannedMapArea) -> Void {
         print("We are in process map area now \(mapArea)")
         
         self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: {[weak self] (parameters, error) in
@@ -97,8 +155,9 @@ class ViewController: UIViewController {
                 print(error.localizedDescription)
                 return
             }
+            
             guard parameters != nil else {
-                self?._printError(err: "parameteres object is null")
+                self?._printError(err: "parameters object is null")
                 return
             }
             
@@ -106,11 +165,17 @@ class ViewController: UIViewController {
             if let parameters = parameters {
                 parameters.continueOnErrors = false
                 parameters.includeBasemap = true
-                parameters.referenceBasemapDirectory = URL(filePath: "\\mytilepackages")
                 self?.preplannedParameters = parameters
                 
                 print("parameters set")
                 print(String(describing: self?.preplannedParameters))
+                
+                self?.downloadPreplannedMapJob = self?._instantiateDownloadJobObject(parameters: parameters)
+                guard self?.downloadPreplannedMapJob != nil else { return }
+                
+                print("DEBUG: map job = \(String(describing: self?.downloadPreplannedMapJob))")
+                
+                self?._runDownloadMapJob()
             }
         })
     }
@@ -129,7 +194,7 @@ class ViewController: UIViewController {
             }
             
             if let mapAreas = mapAreas {
-                self?._createDownoadParameters(mapArea: mapAreas[0])
+                self?._createOfflineMapJob(mapArea: mapAreas[0])
             }
         })
     }
@@ -139,7 +204,7 @@ class ViewController: UIViewController {
         
         // TODO:  move to function
         // see https://developers.arcgis.com/ios/offline-maps-scenes-and-data/download-an-offline-map-ahead-of-time/ for the approach used here
-        self.portalItem = AGSPortalItem(portal: portal, itemID: "ef722b2c44c2443090d98115a9ce8058")
+        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
         let map = AGSMap(item: portalItem!)
         map.load { (error) -> Void in
             self.mapView.map = map
@@ -185,32 +250,19 @@ class ViewController: UIViewController {
         }
     }
     
-    private func _createDownloadParameters(mapArea: AGSPreplannedMapArea) {
-        self.offlineMapTask?.defaultDownloadPreplannedOfflineMapParameters(with: mapArea, completion: { [weak self] (parameters, error) in
-            if let error = error {
-                self?._printError(err: error)
-                return
-            }
-            
-            guard parameters != nil else {
-                self?._printError(err: "No parameters")
-                return
-            }
-            
-            if let parameters = parameters {
-                // Update any of these parameters values, if needed
-                parameters.continueOnErrors = false
-                parameters.includeBasemap = true
-                parameters.referenceBasemapDirectory = URL(string: "file:///mytilepackages")
-                self?.preplannedParameters = parameters
-            }
-        })
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        
+        // create download directories
+        do {
+            try self._createDownloadDirectories()
+        }
+        catch {
+            self._printError(err: "Problem occurred creating temorary directories...")
+            print(error)
+        }
         
         _setupMap()
         _setupGrahpicsOverlay()
