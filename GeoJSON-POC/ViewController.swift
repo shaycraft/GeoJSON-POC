@@ -136,6 +136,9 @@ class ViewController: UIViewController {
             if result.hasErrors {
                 self._printError(err: "result of download offline map has errors")
             } else {
+                print("Downloaded data info ...")
+                print(String(describing: result.mobileMapPackage))
+                print(self.downloadDirectoryMap!.path)
                 self.mapView.map = result.offlineMap
             }
             
