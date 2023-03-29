@@ -114,13 +114,13 @@ class ViewController: UIViewController {
     
     private func _getMapId() -> String {
         // trailheads sample data from tutorial
-            return "ef722b2c44c2443090d98115a9ce8058"
+        return "ef722b2c44c2443090d98115a9ce8058"
         // TIGER census data roads/waters sample (Colorado)
         //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
         // Xcel example on prem portal (dev region)
         //    private let MAP_PORTAL_ID: String! = "31f6634899e24180a43e5fa994e69ec5"
         // Xcel example on prem portal (gdl-tst)
-//        return "d45931415e4141cf8e18851980127176"
+        //        return "d45931415e4141cf8e18851980127176"
     }
     
     private func _runDownloadMapJob() -> Void {
@@ -221,9 +221,6 @@ class ViewController: UIViewController {
     }
     
     private func _setupMap() -> Void {
-        
-//        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
-//        let map = AGSMap(item: portalItem!)
         let map = self._initPortalWithMap(mapId: self._getMapId(), useArcGisOnline: true)
         
         map.load { error -> Void in
@@ -235,13 +232,8 @@ class ViewController: UIViewController {
             
             self.mapView.map = map
             
-            let dummyLayer: AGSFeatureLayer = map.operationalLayers[0] as! AGSFeatureLayer
-            let dummyPortalItem: AGSPortalItem = dummyLayer.item as! AGSPortalItem
-            print("Item id from portal is \(dummyPortalItem.itemID)")
-            // print(map.operationalLayers)
-            
-             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
-             self._processMapAreaList(map: map)
+            self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
+            self._processMapAreaList(map: map)
             
             // Denver
             // let lat = 39.735523
