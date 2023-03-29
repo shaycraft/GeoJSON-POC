@@ -90,6 +90,10 @@ class ViewController: UIViewController {
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
     private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
+    private var geodatabaseSyncTask: AGSGeodatabaseSyncTask = {
+        let featureServiceURL = URL(string: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Sync/WildfireSync/FeatureServer")!
+        return AGSGeodatabaseSyncTask(url: featureServiceURL)
+    }()
     
     // download directories
     private var downloadDirectoryMap: URL?
@@ -281,6 +285,38 @@ class ViewController: UIViewController {
         }
     }
     
+    private func _setupMapGeodatabase() -> Void {
+        let map = AGSMap(basemapStyle: .arcGISTopographic)
+        mapView.map = map
+        
+        self.geodatabaseSyncTask.load{ [weak self] (error) in
+            if let error = error {
+                self?._printError(err: "Geodatabase task failed to load")
+                print(error.localizedDescription)
+            } else {
+                guard let self = self,
+                      let featureServiceInfo = self.geodatabaseSyncTask.featureServiceInfo else { return }
+                
+                let featureLayers = featureServiceInfo.layerInfos.enumerated().map{(offset, layerInfo) -> AGSFeatureLayer in
+                    let layerURL = self.geodatabaseSyncTask.url!.appendingPathComponent(String(offset))
+                    let featureTable = AGSServiceFeatureTable(url: layerURL)
+                    let featureLayer = AGSFeatureLayer(featureTable: featureTable)
+                    featureLayer.name = layerInfo.name
+                    return featureLayer
+                }
+                
+                self.mapView!.map?.operationalLayers.addObjects(from: featureLayers.reversed())
+                
+                // for next steps, see https://github.com/Esri/arcgis-runtime-samples-ios/blob/main/arcgis-ios-sdk-samples/Features/Generate%20geodatabase%20replica%20from%20feature%20service/GenerateGeodatabaseViewController.swift
+                
+                // and defaultGenerateGeodatabaseParametersWithExtent
+            // https://developers.arcgis.com/ios/api-reference/interface_a_g_s_geodatabase_sync_task.html#a4897a56615e1273178ab46cd3a607913
+                
+            }
+            
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -295,7 +331,8 @@ class ViewController: UIViewController {
             print(error)
         }
         
-        _setupMap()
+        //        _setupMap()
+        _setupMapGeodatabase()
         // _setupGrahpicsOverlay()
         // _parseJsonAndAddToGraphics()
     }
