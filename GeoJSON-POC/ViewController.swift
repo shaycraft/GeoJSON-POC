@@ -90,6 +90,10 @@ class ViewController: UIViewController {
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
     private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
+    private var geodatabaseSyncTask: AGSGeodatabaseSyncTask = {
+        let featureServiceURL = URL(string: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Sync/WildfireSync/FeatureServer")!
+        return AGSGeodatabaseSyncTask(url: featureServiceURL)
+    }()
     
     // download directories
     private var downloadDirectoryMap: URL?
@@ -114,13 +118,13 @@ class ViewController: UIViewController {
     
     private func _getMapId() -> String {
         // trailheads sample data from tutorial
-            return "ef722b2c44c2443090d98115a9ce8058"
+        return "ef722b2c44c2443090d98115a9ce8058"
         // TIGER census data roads/waters sample (Colorado)
         //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
         // Xcel example on prem portal (dev region)
         //    private let MAP_PORTAL_ID: String! = "31f6634899e24180a43e5fa994e69ec5"
         // Xcel example on prem portal (gdl-tst)
-//        return "d45931415e4141cf8e18851980127176"
+        //        return "d45931415e4141cf8e18851980127176"
     }
     
     private func _runDownloadMapJob() -> Void {
@@ -222,8 +226,8 @@ class ViewController: UIViewController {
     
     private func _setupMap() -> Void {
         
-//        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
-//        let map = AGSMap(item: portalItem!)
+        //        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
+        //        let map = AGSMap(item: portalItem!)
         let map = self._initPortalWithMap(mapId: self._getMapId(), useArcGisOnline: true)
         
         map.load { error -> Void in
@@ -240,8 +244,8 @@ class ViewController: UIViewController {
             print("Item id from portal is \(dummyPortalItem.itemID)")
             // print(map.operationalLayers)
             
-             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
-             self._processMapAreaList(map: map)
+            self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
+            self._processMapAreaList(map: map)
             
             // Denver
             // let lat = 39.735523
@@ -289,6 +293,38 @@ class ViewController: UIViewController {
         }
     }
     
+    private func _setupMapGeodatabase() -> Void {
+        let map = AGSMap(basemapStyle: .arcGISTopographic)
+        mapView.map = map
+        
+        self.geodatabaseSyncTask.load{ [weak self] (error) in
+            if let error = error {
+                self?._printError(err: "Geodatabase task failed to load")
+                print(error.localizedDescription)
+            } else {
+                guard let self = self,
+                      let featureServiceInfo = self.geodatabaseSyncTask.featureServiceInfo else { return }
+                
+                let featureLayers = featureServiceInfo.layerInfos.enumerated().map{(offset, layerInfo) -> AGSFeatureLayer in
+                    let layerURL = self.geodatabaseSyncTask.url!.appendingPathComponent(String(offset))
+                    let featureTable = AGSServiceFeatureTable(url: layerURL)
+                    let featureLayer = AGSFeatureLayer(featureTable: featureTable)
+                    featureLayer.name = layerInfo.name
+                    return featureLayer
+                }
+                
+                self.mapView!.map?.operationalLayers.addObjects(from: featureLayers.reversed())
+                
+                // for next steps, see https://github.com/Esri/arcgis-runtime-samples-ios/blob/main/arcgis-ios-sdk-samples/Features/Generate%20geodatabase%20replica%20from%20feature%20service/GenerateGeodatabaseViewController.swift
+                
+                // and defaultGenerateGeodatabaseParametersWithExtent
+            // https://developers.arcgis.com/ios/api-reference/interface_a_g_s_geodatabase_sync_task.html#a4897a56615e1273178ab46cd3a607913
+                
+            }
+            
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -303,7 +339,8 @@ class ViewController: UIViewController {
             print(error)
         }
         
-        _setupMap()
+        //        _setupMap()
+        _setupMapGeodatabase()
         // _setupGrahpicsOverlay()
         // _parseJsonAndAddToGraphics()
     }
