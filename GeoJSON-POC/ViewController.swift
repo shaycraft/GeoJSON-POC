@@ -86,15 +86,10 @@ let pathsPointDumeTest = """
 class ViewController: UIViewController {
     @IBOutlet weak var mapView: AGSMapView!
     var graphicsOverlay: AGSGraphicsOverlay! = AGSGraphicsOverlay()
-    var portalItem: AGSPortalItem?
     var offlineMapTask: AGSOfflineMapTask?
     var preplannedParameters: AGSDownloadPreplannedOfflineMapParameters?
     
     private var downloadPreplannedMapJob: AGSDownloadPreplannedOfflineMapJob?
-    // trailheads sample data from tutorial
-    private var MAP_PORTAL_ID: String! = "ef722b2c44c2443090d98115a9ce8058"
-    // TIGER census data roads/waters sample (Colorado)
-    //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
     
     // download directories
     private var downloadDirectoryMap: URL?
@@ -115,6 +110,17 @@ class ViewController: UIViewController {
         print( String(describing: defaultManager.subpaths(atPath: FileManager.default.temporaryDirectory.path)))
         
         return temporaryDownloadURL
+    }
+    
+    private func _getMapId() -> String {
+        // trailheads sample data from tutorial
+            return "ef722b2c44c2443090d98115a9ce8058"
+        // TIGER census data roads/waters sample (Colorado)
+        //    private var MAP_PORTAL_ID: String! = "48045b4e68af4dfe87c8765bfee4a954"
+        // Xcel example on prem portal (dev region)
+        //    private let MAP_PORTAL_ID: String! = "31f6634899e24180a43e5fa994e69ec5"
+        // Xcel example on prem portal (gdl-tst)
+//        return "d45931415e4141cf8e18851980127176"
     }
     
     private func _runDownloadMapJob() -> Void {
@@ -202,26 +208,57 @@ class ViewController: UIViewController {
         })
     }
     
-    private func _setupMap() -> Void {
-        let portal = AGSPortal.arcGISOnline(withLoginRequired: false)
+    private func _initPortalWithMap(mapId: String, useArcGisOnline: Bool) -> AGSMap {
+        var portal: AGSPortal
         
-        // TODO:  move to function
-        // see https://developers.arcgis.com/ios/offline-maps-scenes-and-data/download-an-offline-map-ahead-of-time/ for the approach used here
-        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
-        let map = AGSMap(item: portalItem!)
-        map.load { (error) -> Void in
+        if (useArcGisOnline == true) {
+            portal = AGSPortal.arcGISOnline(withLoginRequired: false)
+        } else {
+            portal = AGSPortal(url: URL(string: "https://oa9sars9w5.execute-api.us-east-2.amazonaws.com/arcgis/home")!, loginRequired: false)
+        }
+        
+        return AGSMap(item: AGSPortalItem(portal: portal, itemID: mapId))
+    }
+    
+    private func _setupMap() -> Void {
+        
+//        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
+//        let map = AGSMap(item: portalItem!)
+        let map = self._initPortalWithMap(mapId: self._getMapId(), useArcGisOnline: true)
+        
+        map.load { error -> Void in
+            if let error = error {
+                print("There was an error in map load!!!!!!")
+                print(error.localizedDescription)
+                exit(1)
+            }
+            
             self.mapView.map = map
-            self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
             
-            self._processMapAreaList(map: map)
+            let dummyLayer: AGSFeatureLayer = map.operationalLayers[0] as! AGSFeatureLayer
+            let dummyPortalItem: AGSPortalItem = dummyLayer.item as! AGSPortalItem
+            print("Item id from portal is \(dummyPortalItem.itemID)")
+            // print(map.operationalLayers)
             
-            self.mapView.setViewpoint(
-                AGSViewpoint(
-                    latitude: 34.02700,
-                    longitude: -118.80500,
-                    scale: 72_000
-                )
+             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
+             self._processMapAreaList(map: map)
+            
+            // Denver
+            // let lat = 39.735523
+            // let long = -104.983407
+            // let scale = 72_000
+            
+            // California
+            let lat = 34.02700
+            let long = -118.80500
+            let scale: Double = 72_000
+            
+            let viewPoint = AGSViewpoint(
+                latitude: lat,
+                longitude: long,
+                scale: scale
             )
+            self.mapView.setViewpoint(viewPoint)
         }
     }
     
@@ -235,7 +272,6 @@ class ViewController: UIViewController {
     
     private func _parseJsonAndAddToGraphics() {
         do {
-            //            let data =  "{\"names\": [\"Bob\", \"Tim\", \"Tina\"]}"
             if let json = try JSONSerialization.jsonObject(with: Data(pathsPointDumeTest.utf8)) as? [String: Any] {
                 print("Json is good")
                 let polyline = try AGSPolyline.fromJSON(json)
@@ -268,8 +304,7 @@ class ViewController: UIViewController {
         }
         
         _setupMap()
-        _setupGrahpicsOverlay()
-        
-        _parseJsonAndAddToGraphics()
+        // _setupGrahpicsOverlay()
+        // _parseJsonAndAddToGraphics()
     }
 }
