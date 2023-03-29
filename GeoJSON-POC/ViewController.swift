@@ -225,9 +225,6 @@ class ViewController: UIViewController {
     }
     
     private func _setupMap() -> Void {
-        
-        //        self.portalItem = AGSPortalItem(portal: portal, itemID: self.MAP_PORTAL_ID)
-        //        let map = AGSMap(item: portalItem!)
         let map = self._initPortalWithMap(mapId: self._getMapId(), useArcGisOnline: true)
         
         map.load { error -> Void in
@@ -238,11 +235,6 @@ class ViewController: UIViewController {
             }
             
             self.mapView.map = map
-            
-            let dummyLayer: AGSFeatureLayer = map.operationalLayers[0] as! AGSFeatureLayer
-            let dummyPortalItem: AGSPortalItem = dummyLayer.item as! AGSPortalItem
-            print("Item id from portal is \(dummyPortalItem.itemID)")
-            // print(map.operationalLayers)
             
             self.offlineMapTask = AGSOfflineMapTask(onlineMap: map)
             self._processMapAreaList(map: map)
